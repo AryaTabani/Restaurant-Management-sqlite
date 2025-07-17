@@ -7,7 +7,7 @@ import (
 
 func CreateFood(food *models.Food) (int64, error) {
 	stmt, err := db.DB.Prepare(`
-		INSERT INTO foods (name, price, foodimage, createdat, updatedat, foodid,menuid)
+		INSERT INTO foods (name, price, foodimage, createdat, updatedat, foodid, menuid)
 		VALUES (?, ?, ?, ?, ?, ?, ?)
 	`)
 	if err != nil {
