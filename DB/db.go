@@ -40,33 +40,23 @@ func createtables() {
 		panic("could not create users table: " + err.Error())
 	}
 
-	createEventsTable := `
-	CREATE TABLE IF NOT EXISTS events (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name TEXT NOT NULL,
-		description TEXT NOT NULL,
-		location TEXT NOT NULL,
-		dateTime DATETIME NOT NULL,
-		user_id INTEGER,
-		FOREIGN KEY(user_id) REFERENCES users(id)
-	)`
-	_, err = DB.Exec(createEventsTable)
-	if err != nil {
-		panic("could not create events table: " + err.Error())
-	}
 
-	createRegistrationsTable := `
-	CREATE TABLE IF NOT EXISTS registration (
+
+	createFoodsTable := `
+	CREATE TABLE IF NOT EXISTS foods (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	event_id INTEGER,
-	user_id INTEGER,
-	FOREIGN KEY(event_id) REFERENCES events(id)
-	FOREIGN KEY(user_id) REFERENCES users(id)
+	name TEXT,
+	price TEXT,
+	foodimage TEXT,
+	createdat DATETIME,
+    updatedat DATETIME,
+	foodid TEXT,
+	menuid TEXT
 	)
 	`
-	_, err = DB.Exec(createRegistrationsTable)
+	_, err = DB.Exec(createFoodsTable)
 
 	if err != nil {
-		panic("Could not create registration table.")
+		panic("Could not create foods table.")
 	}
 }
