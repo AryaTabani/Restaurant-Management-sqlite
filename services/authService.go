@@ -7,14 +7,16 @@ import (
 	"math/rand"
 	"time"
 
+	"example.com/m/v2/helpers"
 	"example.com/m/v2/models"
 	"example.com/m/v2/repository"
 	"example.com/m/v2/utils"
+	"example.com/m/v2/validation"
 )
 
 var (
-	ErrEmailExists = errors.New("this email already exists")
-	ErrPhoneExists = errors.New("this phone number already exists")
+	ErrEmailExists        = errors.New("this email already exists")
+	ErrPhoneExists        = errors.New("this phone number already exists")
 	ErrInvalidCredentials = errors.New("invalid email or password")
 )
 

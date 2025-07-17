@@ -69,3 +69,4 @@ func UpdateUserTokens(id int64, token, refreshToken string) error {
 	_, err := db.DB.Exec(`UPDATE users SET token = ?, refreshtoken = ? WHERE id = ?`, token, refreshToken, id)
 	return err
 }
+

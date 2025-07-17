@@ -1,8 +1,14 @@
 package controllers
 
 import (
+	"errors"
+	"net/http"
+	"strings"
+
 	db "example.com/m/v2/DB"
 	"example.com/m/v2/models"
+	"example.com/m/v2/services"
+	"github.com/gin-gonic/gin"
 )
 
 func GetAllFoods() ([]models.Food, error) {
@@ -65,4 +71,29 @@ func GetFoodByID(userID string) (*models.Food, error) {
 	}
 
 	return &f, nil
+}
+
+func CreateFoodHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var food models.Food
+		if err := c.BindJSON(&food); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body: " + err.Error()})
+			return
+		}
+
+		createdFood, err := services.CreateFood(&food)
+		if err != nil {
+			switch {
+			case errors.Is(err, services.ErrMenuNotFound):
+				c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			case strings.Contains(err.Error(), "validation failed"):
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			default:
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "an unexpected error occurred"})
+			}
+			return
+		}
+
+		c.JSON(http.StatusCreated, createdFood) 
+	}
 }
