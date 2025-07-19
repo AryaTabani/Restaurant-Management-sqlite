@@ -97,3 +97,29 @@ func CreateFoodHandler() gin.HandlerFunc {
 		c.JSON(http.StatusCreated, createdFood) 
 	}
 }
+func UpdateFoodHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		foodId := c.Param("food_id")
+
+		var foodUpdates models.Food
+		if err := c.BindJSON(&foodUpdates); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body: " + err.Error()})
+			return
+		}
+
+		updatedFood, err := services.UpdateFood(foodId, &foodUpdates)
+		if err != nil {
+			switch {
+			case errors.Is(err, services.ErrFoodNotFound):
+				c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			case errors.Is(err, services.ErrMenuNotFound):
+				c.JSON(http.StatusBadRequest, gin.H{"error": "the specified menu does not exist"})
+			default:
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "an unexpected error occurred"})
+			}
+			return
+		}
+
+		c.JSON(http.StatusOK, updatedFood)
+	}
+}

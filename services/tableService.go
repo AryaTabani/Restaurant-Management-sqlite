@@ -2,6 +2,7 @@ package services
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -10,6 +11,10 @@ import (
 	"example.com/m/v2/repository"
 	"example.com/m/v2/validation"
 	"github.com/google/uuid"
+)
+
+var (
+	ErrTableNotFound = errors.New("the specified table was not found")
 )
 
 func CreateTable(table *models.Table) (*models.Table, error) {
@@ -45,4 +50,27 @@ func IsTableTaken(field, value string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+func UpdateTable(tableID string, updates *models.Table) (*models.Table, error) {
+	existingTable, err := repository.GetTableById(tableID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrTableNotFound
+		}
+		return nil, err
+	}
+
+	if updates.Number_of_guests != nil {
+		existingTable.Number_of_guests = updates.Number_of_guests
+	}
+	if updates.Table_number != nil {
+		existingTable.Table_number = updates.Table_number
+	}
+	existingTable.Updated_at = time.Now()
+
+	if err := repository.UpdateTable(existingTable); err != nil {
+		return nil, fmt.Errorf("could not save updated table: %w", err)
+	}
+
+	return existingTable, nil
 }

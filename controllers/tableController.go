@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
@@ -90,5 +91,29 @@ func CreateTableHandler() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusCreated, createdTable)
+	}
+}
+func UpdateTableHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tableID := c.Param("Table_id")
+
+		var tableUpdates models.Table
+		if err := c.BindJSON(&tableUpdates); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body: " + err.Error()})
+			return
+		}
+
+		updatedTable, err := services.UpdateTable(tableID, &tableUpdates)
+		if err != nil {
+			switch {
+			case errors.Is(err, services.ErrTableNotFound):
+				c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			default:
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "an unexpected error occurred"})
+			}
+			return
+		}
+
+		c.JSON(http.StatusOK, updatedTable)
 	}
 }
