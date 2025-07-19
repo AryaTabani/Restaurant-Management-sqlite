@@ -1,8 +1,13 @@
 package controllers
 
 import (
+	"net/http"
+	"strings"
+
 	db "example.com/m/v2/DB"
 	"example.com/m/v2/models"
+	"example.com/m/v2/services"
+	"github.com/gin-gonic/gin"
 )
 
 func GetAllTables() ([]models.Table, error) {
@@ -62,4 +67,28 @@ func GetTableByID(tableID string) (*models.Table, error) {
 	}
 
 	return &t, nil
+}
+func CreateTableHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var table models.Table
+		if err := c.BindJSON(&table); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body: " + err.Error()})
+			return
+		}
+
+		createdTable, err := services.CreateTable(&table)
+		if err != nil {
+			switch {
+			// case errors.Is(err, services.IsTableTaken("tableid", table.Table_id)):
+			// 	c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			case strings.Contains(err.Error(), "validation failed"):
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			default:
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "an unexpected error occurred"})
+			}
+			return
+		}
+
+		c.JSON(http.StatusCreated, createdTable)
+	}
 }
