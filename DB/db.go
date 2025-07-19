@@ -56,7 +56,27 @@ func createtables() {
 	`
 	_, err = DB.Exec(createFoodsTable)
 
+	
+
 	if err != nil {
 		panic("Could not create foods table.")
+	}
+
+	createtablesTable := `
+	CREATE TABLE IF NOT EXISTS tables (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	numberofguests INTEGER,
+	tablenumber INTEGER,
+	createdat DATETIME,
+    updatedat DATETIME,
+	tableid TEXT
+	)
+	`
+	_, err = DB.Exec(createtablesTable)
+
+	
+
+	if err != nil {
+		panic("Could not create tables table.")
 	}
 }
