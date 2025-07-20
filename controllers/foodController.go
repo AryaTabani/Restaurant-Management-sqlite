@@ -13,7 +13,7 @@ import (
 
 func GetAllFoods() ([]models.Food, error) {
 	query := `
-		SELECT id, name, price, Food)_image, createdat, updatedat, food_id,menu_id 
+		SELECT id, name, price, Food_image, createdat, updatedat, foodid,menuid 
 		FROM foods
 	`
 	rows, err := db.DB.Query(query)
@@ -47,15 +47,15 @@ func GetAllFoods() ([]models.Food, error) {
 
 	return foods, nil
 }
-func GetFoodByID(userID string) (*models.Food, error) {
+func GetFoodByID(foodID string) (*models.Food, error) {
 	query := `
 		SELECT id, name, price, foodimage,createdat, updatedat, foodid,menuid
-		FROM users
+		FROM foods
 		WHERE foodid = ?
 	`
 
 	var f models.Food
-	err := db.DB.QueryRow(query, userID).Scan(
+	err := db.DB.QueryRow(query, foodID).Scan(
 		&f.ID,
 		&f.Name,
 		&f.Price,
