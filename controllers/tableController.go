@@ -80,8 +80,6 @@ func CreateTableHandler() gin.HandlerFunc {
 		createdTable, err := services.CreateTable(&table)
 		if err != nil {
 			switch {
-			// case errors.Is(err, services.IsTableTaken("tableid", table.Table_id)):
-			// 	c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			case strings.Contains(err.Error(), "validation failed"):
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			default:

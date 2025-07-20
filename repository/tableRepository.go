@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"database/sql"
+
 	db "example.com/m/v2/DB"
 	"example.com/m/v2/models"
 )
@@ -51,6 +53,17 @@ func UpdateTable(table *models.Table) error {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(table.Number_of_guests,table.Table_number,table.Updated_at,table.Table_id,table.ID)
+	_, err = stmt.Exec(table.Number_of_guests, table.Table_number, table.Updated_at, table.Table_id, table.ID)
 	return err
+}
+func TableExists(tableID string) (bool, error) {
+	var id int64
+	err := db.DB.QueryRow(`SELECT id FROM tables WHERE tableid = ?`, tableID).Scan(&id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil 
+		}
+		return false, err 
+	}
+	return true, nil 
 }

@@ -27,7 +27,7 @@ func CreateTable(table *models.Table) (*models.Table, error) {
 
 	lastID, err := repository.CreateTable(table)
 	if err != nil {
-		return nil, fmt.Errorf("could not create food item: %w", err)
+		return nil, fmt.Errorf("could not create table: %w", err)
 	}
 
 	table.ID = lastID
