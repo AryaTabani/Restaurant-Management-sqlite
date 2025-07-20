@@ -93,4 +93,29 @@ func CreateOrderHandler() gin.HandlerFunc {
 	}
 }
 
+func UpdateOrderHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		orderID := c.Param("Order_id")
 
+		var orderUpdates models.Order
+		if err := c.BindJSON(&orderUpdates); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body: " + err.Error()})
+			return
+		}
+
+		updatedOrder, err := services.UpdateOrder(orderID, &orderUpdates)
+		if err != nil {
+			switch {
+			case errors.Is(err, services.ErrOrderNotFound):
+				c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			case errors.Is(err, services.ErrTableNotFound):
+				c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			default:
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "an unexpected error occurred"})
+			}
+			return
+		}
+
+		c.JSON(http.StatusOK, updatedOrder)
+	}
+}
