@@ -79,4 +79,21 @@ func createtables() {
 	if err != nil {
 		panic("Could not create tables table.")
 	}
+	createordersTable := `
+	CREATE TABLE IF NOT EXISTS tables (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	orderdate DATETIME,
+	createdat DATETIME,
+    updatedat DATETIME,
+	orderid TEXT,
+	tableid TEXT
+	)
+	`
+	_, err = DB.Exec(createordersTable)
+
+	
+
+	if err != nil {
+		panic("Could not create tables table.")
+	}
 }
