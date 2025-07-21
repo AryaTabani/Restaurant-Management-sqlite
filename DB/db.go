@@ -40,8 +40,6 @@ func createtables() {
 		panic("could not create users table: " + err.Error())
 	}
 
-
-
 	createFoodsTable := `
 	CREATE TABLE IF NOT EXISTS foods (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,8 +53,6 @@ func createtables() {
 	)
 	`
 	_, err = DB.Exec(createFoodsTable)
-
-	
 
 	if err != nil {
 		panic("Could not create foods table.")
@@ -74,8 +70,6 @@ func createtables() {
 	`
 	_, err = DB.Exec(createtablesTable)
 
-	
-
 	if err != nil {
 		panic("Could not create tables table.")
 	}
@@ -91,7 +85,22 @@ func createtables() {
 	`
 	_, err = DB.Exec(createordersTable)
 
-	
+	if err != nil {
+		panic("Could not create tables table.")
+	}
+	createmenusTable := `
+	CREATE TABLE IF NOT EXISTS menus (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	name TEXT,
+	category TEXT,
+	startdate DATETIME,
+	enddate DATETIME,
+	createdat DATETIME,
+    updatedat DATETIME,
+	menuid TEXT
+	)
+	`
+	_, err = DB.Exec(createmenusTable)
 
 	if err != nil {
 		panic("Could not create tables table.")
