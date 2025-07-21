@@ -10,6 +10,7 @@ import (
 
 var (
 	ErrMenuNotFound = errors.New("the specified menu does not exist")
+	ErrMenuExist    = errors.New("the specified menu does not exist")
 )
 
 func MenuExists(menuID string) (bool, error) {
