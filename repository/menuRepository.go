@@ -49,3 +49,33 @@ func CreateMenu(menu *models.Menu) (int64, error) {
 
 	return res.LastInsertId()
 }
+func GetMenu(menuID string) (*models.Menu, error) {
+	var menu models.Menu
+	err := db.DB.QueryRow(`
+		SELECT id, name, category, startdate, enddate, createdat, updatedat, menuid
+		FROM menus WHERE menu_id = ?`, menuID).Scan(
+		&menu.ID, &menu.Name, &menu.Category, &menu.Start_Date, &menu.End_Date,
+		&menu.Created_at, &menu.Updated_at, &menu.Menu_id,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &menu, nil
+}
+
+func UpdateMenu(menu *models.Menu) error {
+	stmt, err := db.DB.Prepare(`
+		UPDATE menus SET name = ?, category = ?, startdate = ?, enddate = ?, updatedat = ?
+		WHERE id = ?
+	`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(
+		menu.Name, menu.Category, menu.Start_Date, menu.End_Date, menu.Updated_at,
+		menu.ID,
+	)
+	return err
+}
