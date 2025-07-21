@@ -11,6 +11,6 @@ type Menu struct {
 	Start_Date time.Time
 	End_Date   time.Timer
 	Created_at time.Time
-	Update_at  time.Time
+	Updated_at  time.Time
 	Menu_id    string
 }
