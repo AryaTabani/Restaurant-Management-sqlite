@@ -55,3 +55,64 @@ func GetFoodById(foodid string) (*models.Food, error) {
 	}
 	return &f, nil
 }
+func GetAllFoods() ([]models.Food, error) {
+	query := `
+		SELECT id, name, price, Food_image, createdat, updatedat, foodid,menuid 
+		FROM foods
+	`
+	rows, err := db.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var foods []models.Food
+	for rows.Next() {
+		var f models.Food
+		err := rows.Scan(
+			&f.ID,
+			&f.Name,
+			&f.Price,
+			&f.Food_image,
+			&f.Created_at,
+			&f.Update_at,
+			&f.Food_id,
+			&f.Menu_id,
+		)
+		if err != nil {
+			return nil, err
+		}
+		foods = append(foods, f)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return foods, nil
+}
+func GetFoodByID(foodID string) (*models.Food, error) {
+	query := `
+		SELECT id, name, price, foodimage,createdat, updatedat, foodid,menuid
+		FROM foods
+		WHERE foodid = ?
+	`
+
+	var f models.Food
+	err := db.DB.QueryRow(query, foodID).Scan(
+		&f.ID,
+		&f.Name,
+		&f.Price,
+		&f.Food_image,
+		&f.Created_at,
+		&f.Update_at,
+		&f.Food_id,
+		&f.Menu_id,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &f, nil
+}

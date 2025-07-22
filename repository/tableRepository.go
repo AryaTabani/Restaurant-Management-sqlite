@@ -61,9 +61,67 @@ func TableExists(tableID string) (bool, error) {
 	err := db.DB.QueryRow(`SELECT id FROM tables WHERE tableid = ?`, tableID).Scan(&id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return false, nil 
+			return false, nil
 		}
-		return false, err 
+		return false, err
 	}
-	return true, nil 
+	return true, nil
+}
+func GetAllTables() ([]models.Table, error) {
+	query := `
+		SELECT id, numberofguests, tablenumber, createdat, updatedat, tableid 
+		FROM tables
+	`
+	rows, err := db.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tables []models.Table
+	for rows.Next() {
+		var t models.Table
+		err := rows.Scan(
+			&t.ID,
+			&t.Number_of_guests,
+			&t.Table_number,
+			&t.Created_at,
+			&t.Updated_at,
+			&t.Table_id,
+		)
+		if err != nil {
+			return nil, err
+		}
+		tables = append(tables, t)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return tables, nil
+}
+
+func GetTableByID(tableID string) (*models.Table, error) {
+	query := `
+		SELECT id, numberofguests, tablenumber, createdat, updatedat, tableid 
+		FROM tables
+		WHERE tableid = ?
+	`
+
+	var t models.Table
+	err := db.DB.QueryRow(query, tableID).Scan(
+		&t.ID,
+		&t.Number_of_guests,
+		&t.Table_number,
+		&t.Created_at,
+		&t.Updated_at,
+		&t.Table_id,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &t, nil
 }

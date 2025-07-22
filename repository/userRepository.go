@@ -60,7 +60,7 @@ func GetUserByEmail(email string) (*models.User, error) {
 		&u.Avatar, &u.Phone, &u.Created_at, &u.Updated_at, &u.User_id,
 	)
 	if err != nil {
-		return nil, err 
+		return nil, err
 	}
 	return &u, nil
 }
@@ -69,4 +69,68 @@ func UpdateUserTokens(id int64, token, refreshToken string) error {
 	_, err := db.DB.Exec(`UPDATE users SET token = ?, refreshtoken = ? WHERE id = ?`, token, refreshToken, id)
 	return err
 }
+func GetAllUsers() ([]models.User, error) {
+	query := `
+		SELECT id, firstname, lastname, password, email, avatar, phone, createdat, updatedat, userid 
+		FROM users
+	`
+	rows, err := db.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
+	var users []models.User
+	for rows.Next() {
+		var u models.User
+		err := rows.Scan(
+			&u.ID,
+			&u.First_name,
+			&u.Last_name,
+			&u.Password,
+			&u.Email,
+			&u.Avatar,
+			&u.Phone,
+			&u.Created_at,
+			&u.Updated_at,
+			&u.User_id,
+		)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+func GetUserByID(userID string) (*models.User, error) {
+	query := `
+		SELECT id, firstname, lastname, password, email, avatar, phone, createdat, updatedat, userid
+		FROM users
+		WHERE userid = ?
+	`
+
+	var u models.User
+	err := db.DB.QueryRow(query, userID).Scan(
+		&u.ID,
+		&u.First_name,
+		&u.Last_name,
+		&u.Password,
+		&u.Email,
+		&u.Avatar,
+		&u.Phone,
+		&u.Created_at,
+		&u.Updated_at,
+		&u.User_id,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &u, nil
+}

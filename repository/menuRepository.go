@@ -79,3 +79,65 @@ func UpdateMenu(menu *models.Menu) error {
 	)
 	return err
 }
+func GetAllMenus() ([]models.Menu, error) {
+	query := `
+		SELECT id, name, category,startdate, enddate, createdat, updatedat, menuid 
+		FROM menus
+	`
+	rows, err := db.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var menus []models.Menu
+	for rows.Next() {
+		var m models.Menu
+		err := rows.Scan(
+			&m.ID,
+			&m.Name,
+			&m.Category,
+			&m.Start_Date,
+			&m.End_Date,
+			&m.Created_at,
+			&m.Updated_at,
+			&m.Menu_id,
+		)
+		if err != nil {
+			return nil, err
+		}
+		menus = append(menus, m)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return menus, nil
+}
+func GetMenuByID(menuID string) (*models.Menu, error) {
+	query := `
+		SELECT id, name,category, startdate, enddate, createdat, updatedat, menuid
+		FROM menus
+		WHERE menuid = ?
+	`
+
+	var m models.Menu
+	err := db.DB.QueryRow(query, menuID).Scan(
+		&m.ID,
+		&m.Name,
+		&m.Category,
+		&m.Start_Date,
+		&m.End_Date,
+		&m.Created_at,
+		&m.Updated_at,
+		&m.Menu_id,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &m, nil
+}
+

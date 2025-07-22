@@ -68,3 +68,76 @@ func OrderExists(orderID string) (bool, error) {
 	}
 	return true, nil
 }
+func CreateOrderInTx(tx *sql.Tx, order *models.Order) (int64, error) {
+	stmt, err := tx.Prepare(`
+		INSERT INTO orders (orderdate, createdat, updatedat, orderid, tableid)
+		VALUES (?, ?, ?, ?, ?)
+	`)
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(order.Order_date, order.Created_at, order.Updated_at, order.Order_id, order.Table_id)
+	if err != nil {
+		return 0, err
+	}
+	return res.LastInsertId()
+}
+func GetAllOrders() ([]models.Order, error) {
+	query := `
+		SELECT id, orderdate, createdat, updatedat, orderid,tableid 
+		FROM orders
+	`
+	rows, err := db.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var orders []models.Order
+	for rows.Next() {
+		var o models.Order
+		err := rows.Scan(
+			&o.ID,
+			&o.Order_date,
+			&o.Created_at,
+			&o.Updated_at,
+			&o.Order_id,
+			&o.Table_id,
+		)
+		if err != nil {
+			return nil, err
+		}
+		orders = append(orders, o)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return orders, nil
+}
+func GetOrderByID(orderID string) (*models.Order, error) {
+	query := `
+		SELECT id, orderdate,createdat, updatedat, orderid,tableid
+		FROM orders
+		WHERE orderid = ?
+	`
+
+	var o models.Order
+	err := db.DB.QueryRow(query, orderID).Scan(
+		&o.ID,
+		&o.Order_date,
+		&o.Created_at,
+		&o.Updated_at,
+		&o.Order_id,
+		&o.Table_id,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &o, nil
+}
