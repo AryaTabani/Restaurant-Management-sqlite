@@ -122,4 +122,21 @@ func createtables() {
 	if err != nil {
 		panic("Could not create invoices table.")
 	}
+	createorderitemsTable := `
+	CREATE TABLE IF NOT EXISTS orderitems (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	quantity INTEGER,
+	unitprice FLOAT,
+	createdat DATETIME,
+    updatedat DATETIME,
+	foodid TEXT,
+	orderitemid TEXT,
+	orderid TEXT
+	)
+	`
+	_, err = DB.Exec(createorderitemsTable)
+
+	if err != nil {
+		panic("Could not create invoices table.")
+	}
 }
