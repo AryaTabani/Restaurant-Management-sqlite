@@ -27,7 +27,7 @@ func GetAllUsersHandler() gin.HandlerFunc {
 
 func GetUserByIDHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userId := c.Param("user_id")
+		userId := c.Param("userid")
 
 		user, err := repository.GetUserByID(userId)
 		if err != nil {
