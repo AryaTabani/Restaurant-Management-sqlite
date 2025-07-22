@@ -105,4 +105,21 @@ func createtables() {
 	if err != nil {
 		panic("Could not create tables table.")
 	}
+	createinvoicesTable := `
+	CREATE TABLE IF NOT EXISTS invoices (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	invoiceid TEXT,
+	orderid TEXT,
+	paymentmethod TEXT,
+	patmentstatus TEXT,
+	paymentduedate DATETIME,
+	createdat DATETIME,
+    updatedat DATETIME
+	)
+	`
+	_, err = DB.Exec(createinvoicesTable)
+
+	if err != nil {
+		panic("Could not create invoices table.")
+	}
 }
