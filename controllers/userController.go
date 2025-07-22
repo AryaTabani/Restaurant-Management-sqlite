@@ -87,7 +87,8 @@ func LoginHandler() gin.HandlerFunc {
 			if errors.Is(err, services.ErrInvalidCredentials) {
 				c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "an unexpected error occurred"})
+				//c.JSON(http.StatusInternalServerError, gin.H{"error": "an unexpected error occurred"})
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			}
 			return
 		}

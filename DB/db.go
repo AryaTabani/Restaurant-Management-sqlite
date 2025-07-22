@@ -32,6 +32,8 @@ func createtables() {
     phone TEXT,
     createdat DATETIME,
     updatedat DATETIME,
+	token TEXT,
+	refreshtoken TEXT,
     userid TEXT
 )
 	`
