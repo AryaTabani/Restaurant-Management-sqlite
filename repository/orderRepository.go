@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"database/sql"
+
 	db "example.com/m/v2/DB"
 	"example.com/m/v2/models"
 )
@@ -37,11 +39,10 @@ func GetOrder(orderID string) (*models.Order, error) {
 		&order.Order_id, &order.Table_id,
 	)
 	if err != nil {
-		return nil, err 
+		return nil, err
 	}
 	return &order, nil
 }
-
 
 func UpdateOrder(order *models.Order) error {
 	stmt, err := db.DB.Prepare(`
@@ -55,4 +56,15 @@ func UpdateOrder(order *models.Order) error {
 
 	_, err = stmt.Exec(order.Table_id, order.Updated_at, order.ID)
 	return err
+}
+func OrderExists(orderID string) (bool, error) {
+	var id int64
+	err := db.DB.QueryRow(`SELECT id FROM orders WHERE orderid = ?`, orderID).Scan(&id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }
