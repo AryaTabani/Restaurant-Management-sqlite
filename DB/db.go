@@ -74,7 +74,7 @@ func createtables() {
 		panic("Could not create tables table.")
 	}
 	createordersTable := `
-	CREATE TABLE IF NOT EXISTS tables (
+	CREATE TABLE IF NOT EXISTS orders (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	orderdate DATETIME,
 	createdat DATETIME,
@@ -111,7 +111,7 @@ func createtables() {
 	invoiceid TEXT,
 	orderid TEXT,
 	paymentmethod TEXT,
-	patmentstatus TEXT,
+	paymentstatus TEXT,
 	paymentduedate DATETIME,
 	createdat DATETIME,
     updatedat DATETIME

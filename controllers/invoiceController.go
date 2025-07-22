@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetInvoicesHandler() gin.HandlerFunc {
+func GetAllInvoicesHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		invoices, err := services.GetAllInvoices()
 		if err != nil {
