@@ -1,82 +1,47 @@
 package controllers
 
 import (
+	"database/sql"
 	"errors"
 	"log"
 	"net/http"
 	"strings"
 
-	db "example.com/m/v2/DB"
 	"example.com/m/v2/models"
+	"example.com/m/v2/repository"
 	"example.com/m/v2/services"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func GetAllUsers() ([]models.User, error) {
-	query := `
-		SELECT id, firstname, lastname, password, email, avatar, phone, createdat, updatedat, userid 
-		FROM users
-	`
-	rows, err := db.DB.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var users []models.User
-	for rows.Next() {
-		var u models.User
-		err := rows.Scan(
-			&u.ID,
-			&u.First_name,
-			&u.Last_name,
-			&u.Password,
-			&u.Email,
-			&u.Avatar,
-			&u.Phone,
-			&u.Created_at,
-			&u.Updated_at,
-			&u.User_id,
-		)
+func GetAllUsersHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		users, err := repository.GetAllUsers()
 		if err != nil {
-			return nil, err
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve users"})
+			return
 		}
-		users = append(users, u)
+		c.JSON(http.StatusOK, users)
 	}
-
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return users, nil
 }
-func GetUserByID(userID string) (*models.User, error) {
-	query := `
-		SELECT id, firstname, lastname, password, email, avatar, phone, createdat, updatedat, userid
-		FROM users
-		WHERE userid = ?
-	`
 
-	var u models.User
-	err := db.DB.QueryRow(query, userID).Scan(
-		&u.ID,
-		&u.First_name,
-		&u.Last_name,
-		&u.Password,
-		&u.Email,
-		&u.Avatar,
-		&u.Phone,
-		&u.Created_at,
-		&u.Updated_at,
-		&u.User_id,
-	)
+func GetUserByIDHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userId := c.Param("user_id")
 
-	if err != nil {
-		return nil, err
+		user, err := repository.GetUserByID(userId)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
+			}
+			return
+		}
+
+		user.Password = ""
+		c.JSON(http.StatusOK, user)
 	}
-
-	return &u, nil
 }
 func SignUpHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {

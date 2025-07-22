@@ -1,73 +1,44 @@
 package controllers
 
 import (
+	"database/sql"
 	"errors"
 	"net/http"
 	"strings"
 
-	db "example.com/m/v2/DB"
 	"example.com/m/v2/models"
+	"example.com/m/v2/repository"
 	"example.com/m/v2/services"
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllTables() ([]models.Table, error) {
-	query := `
-		SELECT id, numberofguests, tablenumber, createdat, updatedat, tableid 
-		FROM tables
-	`
-	rows, err := db.DB.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var tables []models.Table
-	for rows.Next() {
-		var t models.Table
-		err := rows.Scan(
-			&t.ID,
-			&t.Number_of_guests,
-			&t.Table_number,
-			&t.Created_at,
-			&t.Updated_at,
-			&t.Table_id,
-		)
+func GetAllTablesHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tables, err := repository.GetAllTables()
 		if err != nil {
-			return nil, err
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve tables"})
+			return
 		}
-		tables = append(tables, t)
+		c.JSON(http.StatusOK, tables)
 	}
-
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return tables, nil
 }
 
-func GetTableByID(tableID string) (*models.Table, error) {
-	query := `
-		SELECT id, numberofguests, tablenumber, createdat, updatedat, tableid 
-		FROM tables
-		WHERE tableid = ?
-	`
+func GetTableByIDHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tableId := c.Param("table_id")
 
-	var t models.Table
-	err := db.DB.QueryRow(query, tableID).Scan(
-		&t.ID,
-		&t.Number_of_guests,
-		&t.Table_number,
-		&t.Created_at,
-		&t.Updated_at,
-		&t.Table_id,
-	)
+		table, err := repository.GetTableByID(tableId)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				c.JSON(http.StatusNotFound, gin.H{"error": "table not found"})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
+			}
+			return
+		}
 
-	if err != nil {
-		return nil, err
+		c.JSON(http.StatusOK, table)
 	}
-
-	return &t, nil
 }
 func CreateTableHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {

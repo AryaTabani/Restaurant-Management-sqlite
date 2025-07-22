@@ -1,78 +1,45 @@
 package controllers
 
 import (
+	"database/sql"
 	"errors"
 	"net/http"
 	"strings"
 
-	db "example.com/m/v2/DB"
 	"example.com/m/v2/models"
+	"example.com/m/v2/repository"
 	"example.com/m/v2/services"
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllMenus() ([]models.Menu, error) {
-	query := `
-		SELECT id, name, category,startdate, enddate, createdat, updatedat, menuid 
-		FROM orders
-	`
-	rows, err := db.DB.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var menus []models.Menu
-	for rows.Next() {
-		var m models.Menu
-		err := rows.Scan(
-			&m.ID,
-			&m.Name,
-			&m.Category,
-			&m.Start_Date,
-			&m.End_Date,
-			&m.Created_at,
-			&m.Updated_at,
-			&m.Menu_id,
-		)
+func GetAllMenusHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		menus, err := repository.GetAllMenus()
 		if err != nil {
-			return nil, err
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve menus"})
+			return
 		}
-		menus = append(menus, m)
+		c.JSON(http.StatusOK, menus)
 	}
-
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return menus, nil
-}
-func GetMenuByID(menuID string) (*models.Menu, error) {
-	query := `
-		SELECT id, name,category, startdate, enddate, createdat, updatedat, menuid
-		FROM menus
-		WHERE menuid = ?
-	`
-
-	var m models.Menu
-	err := db.DB.QueryRow(query, menuID).Scan(
-		&m.ID,
-		&m.Name,
-		&m.Category,
-		&m.Start_Date,
-		&m.End_Date,
-		&m.Created_at,
-		&m.Updated_at,
-		&m.Menu_id,
-	)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &m, nil
 }
 
+func GetMenuByIDHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		menuId := c.Param("menu_id")
+
+		menu, err := repository.GetMenuByID(menuId)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				c.JSON(http.StatusNotFound, gin.H{"error": "menu not found"})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
+			}
+			return
+		}
+
+		c.JSON(http.StatusOK, menu)
+	}
+}
 func CreateMenuHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var menu models.Menu

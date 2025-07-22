@@ -1,76 +1,44 @@
 package controllers
 
 import (
+	"database/sql"
 	"errors"
 	"net/http"
 	"strings"
 
-	db "example.com/m/v2/DB"
 	"example.com/m/v2/models"
+	"example.com/m/v2/repository"
 	"example.com/m/v2/services"
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllFoods() ([]models.Food, error) {
-	query := `
-		SELECT id, name, price, Food_image, createdat, updatedat, foodid,menuid 
-		FROM foods
-	`
-	rows, err := db.DB.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var foods []models.Food
-	for rows.Next() {
-		var f models.Food
-		err := rows.Scan(
-			&f.ID,
-			&f.Name,
-			&f.Price,
-			&f.Food_image,
-			&f.Created_at,
-			&f.Update_at,
-			&f.Food_id,
-			&f.Menu_id,
-		)
+func GetAllFoodsHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		foods, err := repository.GetAllFoods()
 		if err != nil {
-			return nil, err
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve foods"})
+			return
 		}
-		foods = append(foods, f)
+		c.JSON(http.StatusOK, foods)
 	}
-
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return foods, nil
 }
-func GetFoodByID(foodID string) (*models.Food, error) {
-	query := `
-		SELECT id, name, price, foodimage,createdat, updatedat, foodid,menuid
-		FROM foods
-		WHERE foodid = ?
-	`
 
-	var f models.Food
-	err := db.DB.QueryRow(query, foodID).Scan(
-		&f.ID,
-		&f.Name,
-		&f.Price,
-		&f.Food_image,
-		&f.Created_at,
-		&f.Update_at,
-		&f.Food_id,
-		&f.Menu_id,
-	)
+func GetFoodByIDHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		foodId := c.Param("food_id")
 
-	if err != nil {
-		return nil, err
+		food, err := repository.GetFoodByID(foodId)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				c.JSON(http.StatusNotFound, gin.H{"error": "food not found"})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
+			}
+			return
+		}
+
+		c.JSON(http.StatusOK, food)
 	}
-
-	return &f, nil
 }
 
 func CreateFoodHandler() gin.HandlerFunc {
@@ -94,7 +62,7 @@ func CreateFoodHandler() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusCreated, createdFood) 
+		c.JSON(http.StatusCreated, createdFood)
 	}
 }
 func UpdateFoodHandler() gin.HandlerFunc {

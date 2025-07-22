@@ -1,72 +1,44 @@
 package controllers
 
 import (
+	"database/sql"
 	"errors"
 	"net/http"
 	"strings"
 
-	db "example.com/m/v2/DB"
 	"example.com/m/v2/models"
+	"example.com/m/v2/repository"
 	"example.com/m/v2/services"
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllOrders() ([]models.Order, error) {
-	query := `
-		SELECT id, orderdate, createdat, updatedat, orderid,tableid 
-		FROM orders
-	`
-	rows, err := db.DB.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var orders []models.Order
-	for rows.Next() {
-		var o models.Order
-		err := rows.Scan(
-			&o.ID,
-			&o.Order_date,
-			&o.Created_at,
-			&o.Updated_at,
-			&o.Order_id,
-			&o.Table_id,
-		)
+func GetAllOrdersHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		orders, err := repository.GetAllOrders()
 		if err != nil {
-			return nil, err
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "could not retrieve orders"})
+			return
 		}
-		orders = append(orders, o)
+		c.JSON(http.StatusOK, orders)
 	}
-
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return orders, nil
 }
-func GetOrderByID(orderID string) (*models.Order, error) {
-	query := `
-		SELECT id, orderdate,createdat, updatedat, orderid,tableid
-		FROM orders
-		WHERE orderid = ?
-	`
 
-	var o models.Order
-	err := db.DB.QueryRow(query, orderID).Scan(
-		&o.ID,
-		&o.Order_date,
-		&o.Created_at,
-		&o.Updated_at,
-		&o.Order_id,
-		&o.Table_id,
-	)
+func GetOrderByIDHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		orderId := c.Param("order_id")
 
-	if err != nil {
-		return nil, err
+		order, err := repository.GetOrderByID(orderId)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				c.JSON(http.StatusNotFound, gin.H{"error": "order not found"})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
+			}
+			return
+		}
+
+		c.JSON(http.StatusOK, order)
 	}
-
-	return &o, nil
 }
 func CreateOrderHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
